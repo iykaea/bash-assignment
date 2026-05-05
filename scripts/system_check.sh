@@ -1,7 +1,20 @@
 #!/bin/bash
-mkdir -p ../logs
-echo "---------------------" >> ../logs/system_stats.log
-echo "System Scan Date: $(date)" >> ../logs/system_stats.logs
-echo "MEMORY USAGE:" >> ../logs/system_stats.log free -h >> ../logs/system_stats.log
-echo -e "\nDISK SPACE:"  >> ../logs/system_stats.log df -h | grep '^/dev/' >> ../logs/system_stats.log
-echo "scan complete! stats saved to logs/system_stats.log"
+mkdir -p logs
+LOG="logs/system_report_$(date '+ %Y-%m-%d').log"
+{
+	echo "---DISK USAGE ---"
+	df -h
+	echo -e "\n--- MEMORY USAGE ---"
+	free -m
+	echo -e "\n--- CPU LOAD ---"
+	uptime
+	echo -e "\n--- PROCESS COUNT ---"
+	ps aux | wc -l
+	echo -e "\n--- TOP 5 MEMORY USERS ---"
+	ps aux --sort=-%mem | head -n 6
+DISK_VAL=$(df / | grep / | awk '{print $5}' | sed 's/%//g')
+if [ "$DISK_VAL" -gt 80 ]; then 
+	echo -e "\nWARNING: DISK USAGE EXCEEDS 80% (${DISK_VAL}%)"
+fi
+} > "$LOG"
+echo "Assignment B! saved to $LOG"
